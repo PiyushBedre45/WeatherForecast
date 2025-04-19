@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import CloudyImage from "../public/CloudyImage.avif";
-import RainyImage from "../public/RainyImg.jpg";
 import rainImage from "../public/rainImage.jpg";
 import SnowImage from "../public/SnowImage.jpg";
 import SunnyImg from "../public/SunnyImg.jpg";
 import eyecare from "../public/eyecare.png";
+import NightImage from "../public/NightImage.avif";
 import wind from "../public/wind.png";
 import protection from "../public/protection.png";
 import pressure from "../public/pressure.png";
@@ -24,28 +24,42 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  BarChart,
+  Bar,
 } from "recharts";
 
 const Home = () => {
-  // Graph Data
-
-  const data = [
-    { name: "9 AM", temp: 21 },
-    { name: "12 PM", temp: 26 },
-    { name: "3 PM", temp: 28 },
-    { name: "6 PM", temp: 24 },
-    { name: "9 PM", temp: 20 },
-  ];
-
+  const [graphData, setGraphData] = useState([]);
   const [weatherData, setWeatherData] = useState({});
   const [city, setCity] = useState("");
   const [darkMode, setDarkMode] = useState(true);
+  // Graph Data Api
+
+  const getGraphData = async () => {
+    try {
+      const cityName = city.trim() || "pune";
+      const apiData = await axios.get(
+        `http://localhost:5280/api/weather/hourly?city=${cityName}`
+      );
+      const formatted = apiData.data.map((item) => ({
+        name: item.time,
+        temp: item.temperature,
+      }));
+      setGraphData(formatted);
+      console.log(formatted);
+    } catch (err) {
+      console.error("Error fetching graph data:", err);
+    }
+  };
+
+  // Graph Data
+
   console.log(city);
 
   const getWeatherData = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5100/api/weather/current?city=pune"
+        "http://localhost:5280/api/weather/current?city=pune"
       );
       setWeatherData(response.data);
       console.log(response.data);
@@ -63,7 +77,7 @@ const Home = () => {
     if (!city.trim()) return;
     try {
       const response = await axios.get(
-        `http://localhost:5100/api/weather/current?city=${city}`
+        `http://localhost:5280/api/weather/current?city=${city}`
       );
       setWeatherData(response.data);
     } catch (error) {
@@ -71,24 +85,31 @@ const Home = () => {
     }
   };
 
+  // UseEffect to fetch data on component mount
+
   useEffect(() => {
     getWeatherData();
-  }, []);
+    getGraphData();
+  }, [city]);
 
   // Change the Background
 
   const getBackgroundImage = () => {
     const desc = weatherData.weatherDescription?.toLowerCase() || "";
-    if (desc.includes("cloud")) return CloudyImage;
-    if (
-      desc.includes("rain") ||
-      desc.includes("drizzle") ||
-      desc.includes("thunder")
-    )
-      return rainImage;
-    if (desc.includes("snow")) return SnowImage;
-    if (desc.includes("clear") || desc.includes("sun")) return SunnyImg;
-    return SunnyImg;
+    if (darkMode) {
+      if (desc.includes("cloud")) return CloudyImage;
+      if (
+        desc.includes("rain") ||
+        desc.includes("drizzle") ||
+        desc.includes("thunder")
+      )
+        return rainImage;
+      if (desc.includes("snow")) return SnowImage;
+      if (desc.includes("clear") || desc.includes("sun")) return SunnyImg;
+      return SunnyImg;
+    } else {
+      return NightImage;
+    }
   };
 
   return (
@@ -131,7 +152,7 @@ const Home = () => {
                       ? weatherData.weatherDescription.charAt(0).toUpperCase() +
                         weatherData.weatherDescription.slice(1)
                       : "Loading..."}{" "}
-                    , {weatherData.weekday}
+                    , {weatherData.weekDay}
                   </h1>
                 </div>
               </div>
@@ -236,34 +257,59 @@ const Home = () => {
               <div className="w-[12%] p-2 h-[255px]  flex flex-col items-center justify-center gap-2">
                 <div className=" w-full h-[50%] flex flex-col items-center justify-center rounded-full shadow-xl bg-white">
                   <img className="w-[40px] h-[40px]" src={rise} alt="" />
-                  <spam className="text-sm">Sunrise</spam>
-                  <spam className="text-sm font-semibold">6:45 am</spam>
+                  <span className="text-sm">Sunrise</span>
+                  <span className="text-sm font-semibold">6:45 am</span>
                 </div>
                 <div className="bg-white w-full h-[50%] flex flex-col items-center justify-center rounded-full shadow-xl">
                   <img className="w-[40px] h-[40px]" src={set} alt="" />
-                  <spam className="text-sm">Sunset</spam>
-                  <spam className="text-sm font-semibold">7:45 pm</spam>
+                  <span className="text-sm">Sunset</span>
+                  <span className="text-sm font-semibold">7:45 pm</span>
                 </div>
               </div>
 
               {/* Graph According to the Timing */}
 
-              <div className="shadow-xl w-[35%] bg-white  flex items-center rounded-md pt-2 ">
-                <ResponsiveContainer width="90%" height="90%">
-                  <LineChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" />
+              <div className="shadow-xl w-[35%] bg-white  flex  flex-col items-center rounded-md pt-2 ">
+                <ResponsiveContainer width="90%" height={220}>
+                  <BarChart data={graphData}>
+                    <defs>
+                      <linearGradient
+                        id="colorTemp"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="0%" stopColor="#ef4444" stopOpacity={1} />{" "}
+                        {/* Red for higher temperatures */}
+                        <stop
+                          offset="50%"
+                          stopColor="#fef08a"
+                          stopOpacity={1}
+                        />{" "}
+                        {/* Yellow for moderate temperatures */}
+                        <stop
+                          offset="100%"
+                          stopColor="#3b82f6"
+                          stopOpacity={1}
+                        />{" "}
+                        {/* Blue for cooler temperatures */}
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid stroke="#ccc" strokeDasharray="6 6" />
                     <XAxis dataKey="name" />
                     <YAxis unit="°C" />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
+                    <Tooltip formatter={(value) => `${value}°C`} />
+                    <Bar
                       dataKey="temp"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
+                      fill="url(#colorTemp)" // Use the gradient defined above
+                      barSize={26} // Adjust the bar size
                     />
-                  </LineChart>
+                  </BarChart>
                 </ResponsiveContainer>
+                <span className="text-sm pl-5 ">
+                  Hourly Temperature Bar Graph
+                </span>
               </div>
             </div>
           </div>
@@ -277,9 +323,21 @@ const Home = () => {
                 />
                 <span className="text-sm">Piyush</span>
               </div>
-              <div className="border border-black h-[380px]">
-                <li className="list-none text-center rounded-md w-[70px] border border-black">
-                  Home
+              <div className="h-[350px] mt-[40px]  flex flex-col items-center justify-start gap-2 w-full overflow-y-auto">
+                <li className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer">
+                  Login
+                </li>
+                <li className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer">
+                  Login
+                </li>
+                <li className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer">
+                  Login
+                </li>
+                <li className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer">
+                  Login
+                </li>
+                <li className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer">
+                  Login
                 </li>
               </div>
               <div className=" h-[30px] flex items-center ">
@@ -304,7 +362,7 @@ const Home = () => {
                 )}
               </div>
               <div className=" h-[30px] flex items-center ">
-                <li className="list-none text-center rounded-md w-[70px] border border-black">
+                <li className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer">
                   Login
                 </li>
               </div>
