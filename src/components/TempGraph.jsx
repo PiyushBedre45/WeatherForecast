@@ -14,7 +14,7 @@ const TempGraph = () => {
     const {graphData} = useData();
   return (
     <>
-      <ResponsiveContainer className="pt-4 pr-4" width="95%" height={225}>
+      <ResponsiveContainer className="pt-4 pr-4" width="100%" height={225}>
         <BarChart data={graphData}>
           <defs>
             <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">

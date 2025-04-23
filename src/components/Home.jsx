@@ -9,27 +9,28 @@ import set from "../public/sunSet.png";
 import sun from "../public/sun.png";
 import moon from "../public/moon.png";
 import profile from "../public/profile.png";
-import axios from "axios";
 import { useData } from "../context/weatherContext";
 
 import Map from "./Map";
 import StatCard from "./StatCard";
 import TempGraph from "./TempGraph";
+import { Link } from "react-router-dom";
 
 const Home = () => {
-  
   const [darkMode, setDarkMode] = useState(true);
   const [mapView, setMapView] = useState(false);
   const [message, setMessage] = useState(""); // State to store the message
   const [showMessage, setShowMessage] = useState(false); // State to control visibility
 
-  
-  const { weatherData, city, setCity, getWeatherData } = useData();// Using context to manage data
- 
+  const { weatherData, city, setCity, getWeatherData } = useData(); // Using context to manage data
+
+  // Getting user details from local storage
+  const userDetails = JSON.parse(localStorage.getItem("userDetails"));
+
   // Message Handler
   const handleButtonClick = () => {
     // Set the message and show it
-    setMessage("It's sunny! Don't forget sunscreen. 🌞🧴");
+    setMessage(weatherData.friendlySuggestion);
     setShowMessage(true);
     // Hide the message after 5 seconds
     setTimeout(() => {
@@ -37,7 +38,6 @@ const Home = () => {
     }, 5000);
   };
 
-  
   const changeToMapView = () => {
     setMapView(!mapView);
   };
@@ -46,7 +46,6 @@ const Home = () => {
     setDarkMode(!darkMode);
     console.log(darkMode);
   };
-
 
   const getLocation = () => {
     if (!weatherData.longitude || !weatherData.latitude) {
@@ -81,7 +80,7 @@ const Home = () => {
         <div className="w-[92%] h-[100vh] flex flex-col gap-4 p-4 ">
           <div className="w-full mx-auto h-[270px] mt-2 relative shadow-md rounded-md overflow-hidden">
             {/* Background Image */}
-            <div className="bg-black w-full mx-auto h-[270px] absolute opacity-15"></div>
+            {/* <div className="bg-black w-full mx-auto h-[270px] absolute opacity-15"></div> */}
             <img
               className="w-full h-full object-cover"
               src={getBackgroundImage()}
@@ -149,26 +148,29 @@ const Home = () => {
                     }
                   }}
                 />
-                <h1 className="text-2xl cursor-pointer" onClick={getWeatherData}>
+                <h1
+                  className="text-2xl cursor-pointer"
+                  onClick={getWeatherData}
+                >
                   🔍
                 </h1>
               </div>
             </div>
           </div>
 
-          <div className="flex w-[100%] mx-auto h-[255px]  justify-between gap-1">     
-              <StatCard/>
+          <div className="flex w-[100%] mx-auto h-[255px]  justify-between gap-1">
+            <StatCard />
             {/* Sun Details */}
             <div className="w-[12%] p-2 h-[255px]  flex flex-col items-center justify-center gap-2">
               <div className=" w-full h-[50%] flex flex-col items-center justify-center rounded-full shadow-xl bg-white">
-                <img className="w-[40px] h-[40px]" src={rise} alt="" />
+                <img className="w-[35px] h-[35px]" src={rise} alt="" />
                 <span className="text-sm">Sunrise</span>
                 <span className="text-sm font-semibold">
                   {weatherData.sunrise}
                 </span>
               </div>
               <div className="bg-white w-full h-[50%] flex flex-col items-center justify-center rounded-full shadow-xl">
-                <img className="w-[40px] h-[40px]" src={set} alt="" />
+                <img className="w-[35px] h-[35px]" src={set} alt="" />
                 <span className="text-sm">Sunset</span>
                 <span className="text-sm font-semibold">
                   {weatherData.sunset}
@@ -176,13 +178,12 @@ const Home = () => {
               </div>
             </div>
 
-
             <div className="shadow-xl w-[35%] bg-white  flex  flex-col items-center rounded-md ">
               {mapView ? (
                 <Map location={getLocation()} />
               ) : (
                 <>
-                 <TempGraph/>
+                  <TempGraph />
                   <span className="text-sm pl-5  ">
                     Hourly Temperature Bar Graph
                   </span>
@@ -192,44 +193,47 @@ const Home = () => {
           </div>
         </div>
         <div className="w-[8%] h-[100vh]  flex items-center justify-center ">
-          <div className="w-[95%] h-[92vh]  flex flex-col bg-white rounded-md shadow-xl justify-start items-center p-2 gap-2">
-            <div className="flex items-center justify-center flex-col">
+          <div className="w-[95%] h-[92vh]  flex flex-col bg-white rounded-md shadow-xl justify-start items-center p-2 gap-2 bg-gradient-to-r from-purple-400 to-blue-400">
+            <div className="flex items-center justify-center flex-col mt-2">
               <img
-                className="w-[35px] h-[35px] object-cover rounded-full"
+                className="w-[40px] h-[40px] object-cover rounded-full border-4 border-white shadow-xl"
                 src={profile}
                 alt=""
               />
-              <span className="text-sm">Piyush</span>
+              <span className="text-sm text-white font-semibold">{userDetails.name}</span>
             </div>
             <div className="h-[350px] mt-[30px]  flex flex-col items-center justify-start gap-3 w-full overflow-y-auto pt-4">
-              <li className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1">
+              <li className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px]  shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white">
                 Home
               </li>
-              <li className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1">
+              <li className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px]  shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white">
                 About
               </li>
               {mapView ? (
                 <li
                   onClick={changeToMapView}
-                  className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1"
+                  className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px]  shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white"
                 >
                   Graph
                 </li>
               ) : (
                 <li
                   onClick={changeToMapView}
-                  className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1"
+                  className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px]  shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white"
                 >
                   Map
                 </li>
               )}
 
-              <li className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1">
-                News
-              </li>
+              <Link to={"/news"}>
+                {" "}
+                <li className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px]  shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white">
+                  News
+                </li>
+              </Link>
               <li
                 onClick={handleButtonClick}
-                className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1"
+                className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px]  shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white"
               >
                 Message
               </li>
@@ -256,7 +260,7 @@ const Home = () => {
               )}
             </div>
             <div className=" h-[30px] flex items-center ">
-              <li className="list-none flex items-center justify-center rounded-sm text-sm w-[70px] h-[25px] bg-gradient-to-r from-purple-500 to-blue-400 shadow-xl text-white font-semibold cursor-pointer">
+              <li className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px] bg-white text-black shadow-xl  font-semibold cursor-pointer">
                 Login
               </li>
             </div>

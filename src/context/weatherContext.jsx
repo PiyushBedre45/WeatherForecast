@@ -9,15 +9,17 @@ export const useData = () => useContext(DataContext);
 
 // Create the provider component
 export const DataProvider = ({ children }) => {
-  //   const [data, setData] = useState("piyggggsh");
   const [weatherData, setWeatherData] = useState([]);
   const [graphData, setGraphData] = useState([]);
-  const [city, setCity] = useState("pune");
+ 
+  const [city, setCity] = useState(null);
 
-  //   Get wearther data
+ 
+
+  // Get weather data
   const getWeatherData = async () => {
     try {
-      const cityName = city.trim() || "pune";
+      const cityName = city?.trim()  || "pune"; // Use city, fallback to userCity, or default to "pune"
       const response = await axios.get(
         `http://localhost:5280/api/weather/current?city=${cityName}`
       );
@@ -27,10 +29,10 @@ export const DataProvider = ({ children }) => {
     }
   };
 
-  //   Get Graph data
+  // Get graph data
   const getGraphData = async () => {
     try {
-      const cityName = city.trim() || "pune";
+      const cityName = city?.trim()  || "pune"; // Use city, fallback to userCity, or default to "pune"
       const apiData = await axios.get(
         `http://localhost:5280/api/weather/hourly?city=${cityName}`
       );
@@ -46,11 +48,13 @@ export const DataProvider = ({ children }) => {
     }
   };
 
-  //   Use Effect
+  // Use Effect
   useEffect(() => {
-    getWeatherData();
-    getGraphData();
-  }, [city]);
+
+      getWeatherData();
+      getGraphData();
+    
+  }, [city]); // Re-run when city or userCity changes
 
   return (
     <DataContext.Provider
@@ -59,7 +63,7 @@ export const DataProvider = ({ children }) => {
         graphData,
         city,
         setCity, // Expose city and setCity
-        getWeatherData, // Expose getCityName
+        getWeatherData, // Expose getWeatherData
       }}
     >
       {children}
