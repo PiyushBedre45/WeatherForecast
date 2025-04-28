@@ -35,7 +35,7 @@ const Map = ({ location }) => {
   console.log(location.longitude, location.latitude);
 
   return (
-    <div className="w-full h-[100%] rounded-md overflow-hidden shadow-md">
+        <div className="w-full h-[400px] sm:h-[300px] md:h-[500px] rounded-md overflow-hidden shadow-md">
       <MapContainer
         center={[location.latitude || 18.5204, location.longitude || 73.8567]} // Default to Pune if location is undefined
         zoom={10}
@@ -44,16 +44,16 @@ const Map = ({ location }) => {
       >
         {/* Dynamically update the map's center */}
         <UpdateMapCenter location={location} />
-
+    
         {/* Base Map Layer */}
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
+    
         {/* OpenWeather Weather Overlay */}
         <TileLayer
           url={`https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${apiKey}`}
           opacity={0.5}
         />
-
+    
         {/* Marker for the exact location */}
         {location.latitude && location.longitude && (
           <Marker

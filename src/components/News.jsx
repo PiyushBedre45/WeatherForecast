@@ -15,9 +15,9 @@ const News = () => {
   }, []);
   return (
     <>
-      <div className="p-4 mt-5  ">
+      <div className="p-4 mt-5 flex justify-center sm:justify-start">
         <Link to="/">
-          <button className="ml-[75px] px-4 py-2 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 transition duration-300 bg-gradient-to-r from-purple-500 to-blue-400 ">
+          <button className="px-4 py-2 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 transition duration-300 bg-gradient-to-r from-purple-500 to-blue-400">
             Back to Dashboard
           </button>
         </Link>

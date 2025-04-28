@@ -11,19 +11,25 @@ export const useData = () => useContext(DataContext);
 export const DataProvider = ({ children }) => {
   const [weatherData, setWeatherData] = useState([]);
   const [graphData, setGraphData] = useState([]);
- 
-  const [city, setCity] = useState(null);
+  const [daily, setDaily] = useState([]);
 
  
-
+  const [city, setCity] = useState("");
+ 
   // Get weather data
   const getWeatherData = async () => {
     try {
-      const cityName = city?.trim()  || "pune"; // Use city, fallback to userCity, or default to "pune"
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const userCity = storedUser?.city;
+  
+      const cityName = city?.trim() || userCity || "pune"; // priority: manual input > user.city > default "pune"
+  
       const response = await axios.get(
         `http://localhost:5280/api/weather/current?city=${cityName}`
       );
+  
       setWeatherData(response.data);
+      setDaily(response.data.daily);
     } catch (error) {
       console.error("Error fetching weather data:", error);
     }
@@ -63,7 +69,8 @@ export const DataProvider = ({ children }) => {
         graphData,
         city,
         setCity, // Expose city and setCity
-        getWeatherData, // Expose getWeatherData
+        getWeatherData,
+        daily // Expose getWeatherData
       }}
     >
       {children}
