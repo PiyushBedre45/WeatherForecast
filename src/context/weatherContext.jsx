@@ -12,7 +12,7 @@ export const DataProvider = ({ children }) => {
   const [weatherData, setWeatherData] = useState([]);
   const [graphData, setGraphData] = useState([]);
   const [daily, setDaily] = useState([]);
-
+  
  
   const [city, setCity] = useState("");
  

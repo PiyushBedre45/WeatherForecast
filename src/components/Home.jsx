@@ -118,11 +118,14 @@ const Home = () => {
               alt="weather"
             />
 
-            <div className="absolute bg-[#ffffff94] opacity-85 rounded-md bottom-5 left-[18px] w-[90%] h-[40%]  flex flex-col text-black sm:w-[80%] sm:h-[30%] sm:left-4 sm:bottom-3 md:w-[30%] md:h-[48%] md:left-6">
+            <div className="absolute bg-[#ffffff94] opacity-85 rounded-md bottom-5 left-[18px] w-[90%] h-[40%]  flex flex-col justify-center text-black sm:w-[80%] sm:h-[30%] sm:left-4 sm:bottom-3 md:w-[30%] md:h-[48%] md:left-6">
               <div>
-                <h1 className="text-5xl leading-tight sm:text-4xl sm:leading-tight md:text-8xl sm:pl-2">
-                  {weatherData.temperature}°
+                <h1 className="text-5xl leading-tight sm:text-4xl sm:leading-tight md:text-7xl sm:pl-2">
+                  {weatherData.temperature}°C
                 </h1>
+              </div>
+              <div>
+                <h1 className="text-sm pl-3">Feels like {weatherData.feelsLike}°C</h1>
               </div>
               <div>
                 <h1 className="text-lg pl-1 sm:text-base  md:text-xl sm:pl-3">
@@ -250,7 +253,7 @@ const Home = () => {
                 Home
               </li>
               <li className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px] shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white">
-                About
+                Weekly
               </li>
               {mapView ? (
                 <li
