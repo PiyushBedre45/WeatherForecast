@@ -72,12 +72,20 @@ const Register = () => {
         navigate("/login");
       }
     } catch (error) {
-      console.error("⚠️ Registration error:", error.response?.data || error.message);
+      // Handle backend error for duplicate email
+      if (error.response && error.response.data && error.response.data.message) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          email: error.response.data.message, // Set the backend error message for email
+        }));
+      } else {
+        console.error("⚠️ Registration error:", error.response?.data || error.message);
+      }
     }
   };
 
   return (
-    <div className="w-full h-[100vh] flex flex-col items-center justify-center relative ">
+    <div className="w-full h-[100vh] flex flex-col items-center justify-center relative">
       <div className="w-[100%]">
         <img
           className="w-full h-[100vh] object-cover opacity-90"
@@ -107,6 +115,7 @@ const Register = () => {
               onChange={handleChange}
               className="w-full h-[30px] border border-gray-300 pl-1 rounded-sm opacity-65"
             />
+            {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
           </div>
           <div className="w-[95%]">
             <label className="text-sm">Password</label>

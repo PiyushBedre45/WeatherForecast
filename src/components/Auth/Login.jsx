@@ -18,6 +18,7 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
+
     try {
       localStorage.clear(); // Clear local storage before login
       const response = await axios.post(
@@ -37,7 +38,7 @@ const Login = () => {
 
         // Fetch user data using the token
         const userResponse = await axios.get(
-          "http://localhost:5280/api/User/me"
+          "http://localhost:5280/api/user/currentuser"
         );
 
         if (userResponse.status === 200) {
@@ -49,7 +50,6 @@ const Login = () => {
         }
 
         // Navigate to homepage or dashboard
-        getWeatherData();
         navigate("/");
       }
     } catch (error) {
@@ -60,10 +60,7 @@ const Login = () => {
     }
   };
 
-  useEffect(() => {
-    getWeatherData();
-  }, []);
-
+ 
   return (
     <div className="w-full h-[100vh] flex items-center justify-center relative">
       <div className="shadow-xl w-[30%] h-[450px] flex items-center justify-center rounded-md absolute bg-[#ffffff72]">

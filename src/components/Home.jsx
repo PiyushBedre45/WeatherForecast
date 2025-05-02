@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import CloudyImage from "../public/CloudyImage.avif";
 import rainImage from "../public/rainImage.jpg";
 import SnowImage from "../public/SnowImage.jpg";
@@ -31,8 +31,23 @@ const Home = () => {
   const handleSearch = (e) => {
     setCity(tempCity);
     getWeatherData(tempCity);
+    setTempCity("");
   };
 
+  const [name, setName] = useState("user");
+  useEffect(() => {
+    const fetchStoredUser = async () => {
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      if (storedUser) {
+        setName(storedUser.name);
+
+        if (storedUser?.city) {
+          setCity(storedUser.city);
+        }
+      }
+    };
+    fetchStoredUser();
+  }, []);
   // Message Handler
   const handleButtonClick = () => {
     // Set the message and show it
@@ -90,20 +105,37 @@ const Home = () => {
     // Remove token and user data from localStorage
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
-    // Clear Axios Authorization header
     delete axios.defaults.headers.common["Authorization"];
-
-    // Redirect to login page
-    // navigate("/login");
-    // window.location.reload();
-    // Reload the page to reflect changes
-
+    setName("user");
+    setTempCity("");
     setCity("pune");
     getWeatherData();
 
     console.log("User logged out and token removed.");
   };
+
+  //Changes made by Rutvik
+  const { getWeatherDataByCoords, getGraphDataByCoords } = useData();
+
+  const getLiveLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log("Coords:", latitude, longitude);
+
+          getWeatherDataByCoords(latitude, longitude);
+          getGraphDataByCoords(latitude, longitude);
+        },
+        (error) => {
+          console.error("Error getting location:", error.message);
+        }
+      );
+    } else {
+      console.error("Geolocation not supported");
+    }
+  };
+  //Changes made by Rutvik
 
   return (
     <>
@@ -125,7 +157,9 @@ const Home = () => {
                 </h1>
               </div>
               <div>
-                <h1 className="text-sm pl-3">Feels like {weatherData.feelsLike}°C</h1>
+                <h1 className="text-sm pl-3">
+                  Feels like {weatherData.feelsLike}°C
+                </h1>
               </div>
               <div>
                 <h1 className="text-lg pl-1 sm:text-base  md:text-xl sm:pl-3">
@@ -245,16 +279,18 @@ const Home = () => {
                 src={profile}
                 alt=""
               />
-              <span className="text-sm text-white font-semibold">piyush</span>
+              <span className="text-sm text-white font-semibold">{name}</span>
             </div>
 
             <div className="h-[350px] mt-[30px] flex flex-col items-center justify-start gap-3  overflow-y-auto pt-4 ">
               <li className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px] shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white">
                 Home
               </li>
-              <li className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px] shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white">
-                Weekly
-              </li>
+              <a href="">
+                <li className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px] shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white">
+                  Weekly
+                </li>
+              </a>
               {mapView ? (
                 <li
                   onClick={changeToMapView}
@@ -280,6 +316,12 @@ const Home = () => {
                 className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px] shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white"
               >
                 Message
+              </li>
+              <li
+                onClick={getLiveLocation}
+                className="list-none flex items-center justify-center rounded-xl text-sm w-[80px] h-[25px] shadow-xl text-black font-semibold cursor-pointer transform transition-transform duration-300 hover:-translate-y-1 bg-white"
+              >
+                Live
               </li>
             </div>
 
@@ -327,7 +369,7 @@ const Home = () => {
           </div>
         </div>
       </div>
-      <WeeklyCard currentDay={weatherData.weekDay}/>
+      <WeeklyCard currentDay={weatherData.weekDay} />
     </>
   );
 };
