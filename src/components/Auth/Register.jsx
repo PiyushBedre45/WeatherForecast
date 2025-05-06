@@ -16,6 +16,7 @@ const Register = () => {
   });
 
   const [errors, setErrors] = useState({}); // State to track validation errors
+  const [loading, setLoading] = useState(false); // State to track loading status
 
   const handleChange = (e) => {
     setFormData({
@@ -28,37 +29,70 @@ const Register = () => {
   const handleSubmit = async () => {
     const newErrors = {};
 
-    // Name validation
-    if (formData.name.length < 2) {
-      newErrors.name = "Name should be at least 2 characters long.";
+    const namePattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required.";
+    } else if (formData.name.replace(/\s/g, "").length < 3) {
+      newErrors.name = "Name must be more than two letters.";
+    } else if (!namePattern.test(formData.name)) {
+      newErrors.name = "Name should contain only letters and optional space.";
     }
 
-    // Password validation
-    const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
-    if (!passwordPattern.test(formData.password)) {
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required.";
+    } else if (!formData.email.includes("@")) {
+      newErrors.email = "Email must be valid and contain '@'.";
+    }
+
+    const passwordPattern =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    if (!formData.password.trim()) {
+      newErrors.password = "Password is required.";
+    } else if (!passwordPattern.test(formData.password)) {
       newErrors.password =
-        "Password should be at least 6 characters long and include at least one letter, one number, and one special character.";
+        "Password should be at least 6 characters, include one letter, one number, and one special character.";
     }
 
-    // Postal code validation
-    const postalCodePattern = /^\d{6}$/; // Regular expression for 6-digit postal code
-    if (!postalCodePattern.test(formData.postalCode)) {
+    const locationPattern = /^[A-Za-z]+(?:\s[A-Za-z]+)*$/;
+    if (!formData.city.trim()) {
+      newErrors.city = "City is required.";
+    } else if (!locationPattern.test(formData.city)) {
+      newErrors.city = "City should contain only letters and optional space.";
+    }
+
+    if (!formData.country.trim()) {
+      newErrors.country = "Country is required.";
+    } else if (!locationPattern.test(formData.country)) {
+      newErrors.country =
+        "Country should contain only letters and optional space.";
+    }
+
+    const phonePattern = /^[6-9]\d{9}$/;
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Phone number is required.";
+    } else if (!phonePattern.test(formData.phone)) {
+      newErrors.phone = "Phone should be a valid 10-digit Indian number.";
+    }
+
+    const postalCodePattern = /^\d{6}$/;
+    if (!formData.postalCode.trim()) {
+      newErrors.postalCode = "Postal code is required.";
+    } else if (!postalCodePattern.test(formData.postalCode)) {
       newErrors.postalCode = "Postal code should be exactly 6 digits.";
     }
 
-    // If there are errors, update the state and stop form submission
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
+    setLoading(true);
     try {
       const response = await axios.post(
         "http://localhost:5280/api/auth/register",
         formData
       );
       if (response.status === 200 || response.status === 201) {
-        // Clear form
         setFormData({
           name: "",
           email: "",
@@ -68,35 +102,50 @@ const Register = () => {
           phone: "",
           postalCode: "",
         });
-        // Redirect to login
         navigate("/login");
       }
     } catch (error) {
-      // Handle backend error for duplicate email
-      if (error.response && error.response.data && error.response.data.message) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
         setErrors((prevErrors) => ({
           ...prevErrors,
-          email: error.response.data.message, // Set the backend error message for email
+          email: error.response.data.message,
         }));
       } else {
-        console.error("⚠️ Registration error:", error.response?.data || error.message);
+        console.error(
+          "⚠️ Registration error:",
+          error.response?.data || error.message
+        );
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="w-full h-[100vh] flex flex-col items-center justify-center relative">
-      <div className="w-[100%]">
+      <div className="w-full">
         <img
           className="w-full h-[100vh] object-cover opacity-90"
           src="https://images.unsplash.com/photo-1597571063304-81f081944ee8?q=80&w=1936&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt=""
         />
       </div>
-      <div className="shadow-xl w-[30%] h-auto flex flex-col items-center justify-center rounded-md absolute bg-[#ffffff72] py-2">
+
+      {/* Spinner overlay */}
+      {loading && (
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center z-10">
+          <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+
+      <div className="shadow-xl w-[90%] sm:w-[70%] md:w-[50%] lg:w-[30%] h-auto flex flex-col items-center justify-center rounded-md absolute bg-[#ffffff72] py-2">
         <div className="w-[95%] h-[100%] flex justify-center items-center flex-col gap-1">
           <div className="w-[95%]">
-            <label className="text-sm">Name</label>
+            <label className="text-sm">Enter your name</label>
             <input
               type="text"
               name="name"
@@ -104,10 +153,12 @@ const Register = () => {
               onChange={handleChange}
               className="w-full h-[30px] border border-gray-300 pl-1 rounded-sm opacity-65"
             />
-            {errors.name && <p className="text-red-500 text-xs">{errors.name}</p>}
+            {errors.name && (
+              <p className="text-red-500 text-xs">{errors.name}</p>
+            )}
           </div>
           <div className="w-[95%]">
-            <label className="text-sm">Email</label>
+            <label className="text-sm">Enter your email</label>
             <input
               type="text"
               name="email"
@@ -115,10 +166,12 @@ const Register = () => {
               onChange={handleChange}
               className="w-full h-[30px] border border-gray-300 pl-1 rounded-sm opacity-65"
             />
-            {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-xs">{errors.email}</p>
+            )}
           </div>
           <div className="w-[95%]">
-            <label className="text-sm">Password</label>
+            <label className="text-sm">Create password</label>
             <input
               type="password"
               name="password"
@@ -126,11 +179,13 @@ const Register = () => {
               onChange={handleChange}
               className="w-full h-[30px] border border-gray-300 pl-1 rounded-sm opacity-65"
             />
-            {errors.password && <p className="text-red-500 text-xs">{errors.password}</p>}
+            {errors.password && (
+              <p className="text-red-500 text-xs">{errors.password}</p>
+            )}
           </div>
-          <div className="w-[95%] flex gap-2">
-            <div className="w-[50%]">
-              <label className="text-sm">City</label>
+          <div className="w-[95%] flex flex-col sm:flex-row gap-2">
+            <div className="w-full sm:w-[50%]">
+              <label className="text-sm">Enter your city</label>
               <input
                 type="text"
                 name="city"
@@ -138,9 +193,12 @@ const Register = () => {
                 onChange={handleChange}
                 className="w-full h-[30px] border border-gray-300 pl-1 rounded-sm opacity-65"
               />
+              {errors.city && (
+                <p className="text-red-500 text-xs">{errors.city}</p>
+              )}
             </div>
-            <div className="w-[50%]">
-              <label className="text-sm">Country</label>
+            <div className="w-full sm:w-[50%]">
+              <label className="text-sm">Enter your country</label>
               <input
                 type="text"
                 name="country"
@@ -148,11 +206,14 @@ const Register = () => {
                 onChange={handleChange}
                 className="w-full h-[30px] border border-gray-300 pl-1 rounded-sm opacity-65"
               />
+              {errors.country && (
+                <p className="text-red-500 text-xs">{errors.country}</p>
+              )}
             </div>
           </div>
-          <div className="w-[95%] flex gap-2">
-            <div className="w-[50%]">
-              <label className="text-sm">Phone</label>
+          <div className="w-[95%] flex flex-col sm:flex-row gap-2">
+            <div className="w-full sm:w-[50%]">
+              <label className="text-sm">Enter your phone number</label>
               <input
                 type="text"
                 name="phone"
@@ -160,9 +221,12 @@ const Register = () => {
                 onChange={handleChange}
                 className="w-full h-[30px] border border-gray-300 pl-1 rounded-sm opacity-65"
               />
+              {errors.phone && (
+                <p className="text-red-500 text-xs">{errors.phone}</p>
+              )}
             </div>
-            <div className="w-[50%]">
-              <label className="text-sm">Postal code</label>
+            <div className="w-full sm:w-[50%]">
+              <label className="text-sm">Enter your postal code</label>
               <input
                 type="text"
                 name="postalCode"

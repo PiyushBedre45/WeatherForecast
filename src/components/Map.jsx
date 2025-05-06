@@ -72,7 +72,7 @@ const Map = ({ location }) => {
   };
 
   return (
-    <div className="w-full h-[400px] sm:h-[300px] md:h-[500px] rounded-md overflow-hidden shadow-md">
+    <div className="w-full h-[400px] sm:h-[300px] md:h-[500px] rounded-md overflow-hidden shadow-md z-10">
       <MapContainer
         center={[location.latitude || 18.5204, location.longitude || 73.8567]}
         zoom={10}
